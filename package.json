@@ -1,5 +1,5 @@
 {
-  "name": "express-urlrewrite",
+  "name": "express-urlrewrite2",
   "description": "URL rewrite middleware for express",
   "repository": {
     "type": "git",
@@ -19,6 +19,6 @@
   "license": "MIT",
   "dependencies": {
     "debug": "*",
-    "path-to-regexp": "^1.0.3"
+    "path-to-regexp": "^1.7.0"
   }
 }
