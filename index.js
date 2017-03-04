@@ -42,7 +42,12 @@ function rewrite(src, dst) {
         return next();
       }
     }
-    req.url = (dst || src).replace(/\$(\d+)|(?::(\w+))/g, function(_, n, name) {
+    var url = dst || src;
+    if (/^\/\//.test(url)) {
+      req.baseUrl = '';
+      url = url.substr(1);
+    }
+    req.url = url.replace(/\$(\d+)|(?::(\w+))/g, function(_, n, name) {
       if (name) {
         if (m) return m[map[name].index + 1];
         else return req.params[name];
