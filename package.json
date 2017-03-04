@@ -19,6 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "debug": "*",
+    "methods": "^1.1.2",
     "path-to-regexp": "^1.7.0"
   }
 }

@@ -5,6 +5,7 @@
 const debug = require('debug')('express-urlrewrite2');
 const toRegexp = require('path-to-regexp');
 const URL = require('url');
+const slice = Array.prototype.slice;
 
 /**
  * Expose `expose`.
@@ -19,6 +20,7 @@ module.exports = rewrite;
  * @param {String|Object|Function} [dst] destination url
  * @param {Object|Function} [options] options for rewriting
  * @param {String} [options.methods] http methods
+ * @param {String} [options.method] http method
  * @param {Function} [options.filter] filter function
  * @return {Function}
  * @api public
@@ -39,7 +41,7 @@ function rewrite(src, dst, options) {
     options = {filter: options}
   }
 
-  let methods = options.methods || '*';
+  let methods = options.methods || options.method || '*';
   if (!Array.isArray(methods)) {
     methods = [methods];
   }
@@ -121,3 +123,19 @@ function toMap(params) {
 
   return map;
 }
+
+require('methods').map(method => {
+  rewrite[method] = function () {
+    const args = slice.call(arguments);
+    const last = args.length - 1;
+    const options = args[last];
+    if (typeof options === 'string') {
+      args.push({method});
+    } else if (typeof options === 'function') {
+      args[last] = {method, filter: options};
+    } else if (options && typeof options === 'object') {
+      options.method = method;
+    }
+    return rewrite.call(null, ...args);
+  }
+});
