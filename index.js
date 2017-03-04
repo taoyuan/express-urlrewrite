@@ -77,7 +77,7 @@ function rewrite(src, dst, filter) {
     if (filter) {
       const result = filter(m);
       if (result && result.then) {
-        return result.then(exec);
+        return result.then(rewrite => rewrite === false ? next() : exec());
       }
     }
     exec();
