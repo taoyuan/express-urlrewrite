@@ -59,15 +59,18 @@ app.get('/rewritten/:var', someMw);
 
 Instead of passing control to next middleware, it passes control to next route.
 
-## New in version 1.3
+## New in version 2.0
 
-rewrite can clear `req.baseUrl` for url starting with `//`.
+rewrite can filter result of regex exec before eval destination url.
 
 ```js
-app.use(rewrite('/path', '//anotherpath?param=some'));
+app.use(rewrite('/foo/*/bar', '/anotherpath?param=$1', m => {
+  return Foo.findOne({where: {name: m[1]}}).then(foo => {
+    m[1] = foo.id;
+  }); 
+}));
 ```
 
-`req.baseUrl` will be empty. 
 
 ## Debugging
 

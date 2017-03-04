@@ -1,11 +1,10 @@
-
 /**
  * Module dependencies.
  */
 
- var debug = require('debug')('express-urlrewrite2');
- var toRegexp = require('path-to-regexp');
- var URL = require('url');
+const debug = require('debug')('express-urlrewrite2');
+const toRegexp = require('path-to-regexp');
+const URL = require('url');
 
 /**
  * Expose `expose`.
@@ -17,15 +16,25 @@ module.exports = rewrite;
  * Rewrite `src` to `dst`.
  *
  * @param {String|RegExp} src source url for two parameters or destination url for one parameter
- * @param {String} [dst] destination url
+ * @param {String|Function} [dst] destination url
+ * @param {Function} [filter] filter function
  * @return {Function}
  * @api public
  */
 
-function rewrite(src, dst) {
-  var keys = [], re, map;
+function rewrite(src, dst, filter) {
+  if (typeof dst === 'function') {
+    filter = dst;
+    dst = src;
+    src = null;
+  } else if (!dst) {
+    dst = src;
+    src = null;
+  }
 
-  if (dst) {
+  let keys = [], re, map;
+
+  if (src) {
     re = toRegexp(src, keys);
     map = toMap(keys);
     debug('rewrite %s -> %s    %s', src, dst, re);
@@ -33,37 +42,45 @@ function rewrite(src, dst) {
     debug('rewrite current route -> %s', src);
   }
 
-  return function(req, res, next) {
-    var orig = req.url;
-    var m;
-    if (dst) {
+  return function (req, res, next) {
+    const orig = req.url;
+    let m;
+    if (src) {
       m = re.exec(orig);
       if (!m) {
         return next();
       }
     }
-    var url = dst || src;
-    if (/^\/\//.test(url)) {
-      req.baseUrl = '';
-      url = url.substr(1);
-    }
-    req.url = url.replace(/\$(\d+)|(?::(\w+))/g, function(_, n, name) {
-      if (name) {
-        if (m) return m[map[name].index + 1];
-        else return req.params[name];
-      } else if (m) {
-        return m[n];
-      } else {
-        return req.params[n];
+
+    function exec() {
+      req.url = dst.replace(/\$(\d+)|(?::(\w+))/g, function (_, n, name) {
+        if (name) {
+          if (m) return m[map[name].index + 1];
+          else return req.params[name];
+        } else if (m) {
+          return m[n];
+        } else {
+          return req.params[n];
+        }
+      });
+      debug('rewrite %s -> %s', orig, req.url);
+      if (req.url.indexOf('?') > 0) {
+        req.query = URL.parse(req.url, true).query;
+        debug('rewrite updated new query', req.query);
       }
-    });
-    debug('rewrite %s -> %s', orig, req.url);
-    if (req.url.indexOf('?') > 0) {
-      req.query = URL.parse(req.url, true).query;
-      debug('rewrite updated new query', req.query);
+      if (src) {
+        return next('route');
+      }
+      next();
     }
-    if (dst) next();
-    else next('route');
+
+    if (filter) {
+      const result = filter(m);
+      if (result && result.then) {
+        return result.then(exec);
+      }
+    }
+    exec();
   }
 }
 
@@ -76,9 +93,9 @@ function rewrite(src, dst) {
  */
 
 function toMap(params) {
-  var map = {};
+  const map = {};
 
-  params.forEach(function(param, i) {
+  params.forEach(function (param, i) {
     param.index = i;
     map[param.name] = param;
   });
