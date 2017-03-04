@@ -96,7 +96,7 @@ function rewrite(src, dst, options) {
     }
 
     if (filter) {
-      const result = filter(m);
+      const result = filter(m, req, res);
       if (result && result.then) {
         return result.then(rewrite => rewrite === false ? next() : exec());
       }
