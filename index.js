@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
- var debug = require('debug')('express-urlrewrite');
+ var debug = require('debug')('express-urlrewrite2');
  var toRegexp = require('path-to-regexp');
  var URL = require('url');
 
@@ -16,8 +16,8 @@ module.exports = rewrite;
 /**
  * Rewrite `src` to `dst`.
  *
- * @param {String|RegExp} src
- * @param {String} dst
+ * @param {String|RegExp} src source url for two parameters or destination url for one parameter
+ * @param {String} [dst] destination url
  * @return {Function}
  * @api public
  */
