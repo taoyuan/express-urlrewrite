@@ -16,21 +16,36 @@ module.exports = rewrite;
  * Rewrite `src` to `dst`.
  *
  * @param {String|RegExp} src source url for two parameters or destination url for one parameter
- * @param {String|Function} [dst] destination url
- * @param {Function} [filter] filter function
+ * @param {String|Object|Function} [dst] destination url
+ * @param {Object|Function} [options] options for rewriting
+ * @param {String} [options.methods] http methods
+ * @param {Function} [options.filter] filter function
  * @return {Function}
  * @api public
  */
 
-function rewrite(src, dst, filter) {
-  if (typeof dst === 'function') {
-    filter = dst;
+function rewrite(src, dst, options) {
+  if (dst && typeof dst !== 'string') {
+    options = dst;
     dst = src;
     src = null;
   } else if (!dst) {
     dst = src;
     src = null;
   }
+
+  options = options || {};
+  if (typeof options === 'function') {
+    options = {filter: options}
+  }
+
+  let methods = options.methods || '*';
+  if (!Array.isArray(methods)) {
+    methods = [methods];
+  }
+  methods = methods.map(m => m.toUpperCase());
+
+  const {filter} = options;
 
   let keys = [], re, map;
 
@@ -43,6 +58,10 @@ function rewrite(src, dst, filter) {
   }
 
   return function (req, res, next) {
+    if (!methods.includes('*') && (!methods.includes(req.method.toUpperCase()))) {
+      return next();
+    }
+
     const orig = req.url;
     let m;
     if (src) {
