@@ -3,9 +3,9 @@
   "description": "URL rewrite middleware for express",
   "repository": {
     "type": "git",
-    "url": "git://github.com/kapouer/express-urlrewrite"
+    "url": "git://github.com/taoyuan/express-urlrewrite2"
   },
-  "version": "1.2.0",
+  "version": "1.3.0",
   "keywords": [
     "express",
     "middleware",
