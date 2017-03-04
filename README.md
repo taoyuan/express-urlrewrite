@@ -1,4 +1,4 @@
-express-urlrewrite
+express-urlrewrite2
 ==================
 
 URL rewrite middleware for express.
@@ -59,7 +59,16 @@ app.get('/rewritten/:var', someMw);
 
 Instead of passing control to next middleware, it passes control to next route.
 
+## New in version 1.3
+
+rewrite can clear `req.baseUrl` for url starting with `//`.
+
+```js
+app.use(rewrite('/path', '//anotherpath?param=some'));
+```
+
+`req.baseUrl` will be empty. 
 
 ## Debugging
 
-Set environment variable `DEBUG=express-urlrewrite`
+Set environment variable `DEBUG=express-urlrewrite2`
