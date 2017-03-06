@@ -67,10 +67,14 @@ function rewrite(src, dst, options) {
     const orig = req.url;
     let m;
     if (src) {
-      m = re.exec(orig);
+      m = re.exec(req.path);
       if (!m) {
         return next();
       }
+    }
+    let qs = '';
+    if (orig.indexOf('?') > 0) {
+      qs = orig.substr(orig.indexOf('?') + 1);
     }
 
     function exec() {
@@ -84,6 +88,9 @@ function rewrite(src, dst, options) {
           return req.params[n];
         }
       });
+      if (qs) {
+        req.url += (req.url.indexOf('?') > 0 ? '&' : '?') + qs;
+      }
       debug('rewrite %s -> %s', orig, req.url);
       if (req.url.indexOf('?') > 0) {
         req.query = URL.parse(req.url, true).query;
